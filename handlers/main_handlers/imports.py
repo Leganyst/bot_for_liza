@@ -1,0 +1,1 @@
+from handlers.initBot import dp, bot
