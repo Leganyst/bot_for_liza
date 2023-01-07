@@ -1,9 +1,7 @@
 .vscode/
-
-database/__pychache__/
-
-handlers/__pychache__/
-handlers/main_handlers/__pychache__/
-handlers/time_handlers/__pychache__/
-
 Заметка.txt
+
+**/__pycache__
+
+*.pyc
+*.pyo

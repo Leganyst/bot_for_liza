@@ -11,14 +11,16 @@ from handlers.functions import functions
 
 
 # Реагирует на команду /create или /next после создания заметки или кнопка "Давай!" после старта
-@dp.message_handler(commands=['create'])
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['create'])
 @dp.message_handler(commands=['next'], state=CreateTimetable.wait_choose)
-@dp.message_handler(commands=['create'], state=CreateTimetable.look_day)
-@dp.message_handler(lambda message: message.text == 'Давай!', state=CreateTimetable.create_timetable)
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['create'], state=CreateTimetable.look_day)
+@dp.message_handler(lambda message: message.text == 'Давай!' and functions.check_user_filter(message), state=CreateTimetable.create_timetable)
 async def save_time(message: aiogram.types.Message):
     '''
     Предлагаем выбрать день для создания заметки.
     '''
+    # await message.answer(text=None, reply_markup=ReplyKeyboardRemove())
+
     inline_keyboard = functions.create_bottoms_for_choose_day(days, days_dictionary)
     await message.answer('Выбери день недели для создания заметки:', reply_markup=inline_keyboard)
     await CreateTimetable.choose_day.set()
@@ -32,7 +34,7 @@ async def choose_day(callback_query: aiogram.types.CallbackQuery,
     '''
 
     await state.update_data(day=callback_query.data)
-    await callback_query.message.answer(text="Введи заметку, в которой опишешь что и где будет в назначенное время.")
+    await callback_query.message.answer(text="Введи заметку, в которой опишешь что и где будет в назначенное время (само время писать не стоит).")
     await CreateTimetable.save_note.set()
     await bot.answer_callback_query(callback_query.id)
 
@@ -68,43 +70,13 @@ async def save_time(message: aiogram.types.Message, state: aiogram.dispatcher.FS
 # =============== выход из режима ========================
 # ========================================================
 
-@dp.message_handler(commands=['quit'], state=CreateTimetable.choose_day)
-@dp.message_handler(commands=['quit'], state=CreateTimetable.create_timetable)
-@dp.message_handler(commands=['quit'], state=CreateTimetable.save_note)
-@dp.message_handler(commands=['quit'], state=CreateTimetable.look_day)
-@dp.message_handler(commands=['quit'], state=CreateTimetable.wait_choose)
-@dp.message_handler(commands=['quit'], state=CreateTimetable.save_time)
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.choose_day)
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.create_timetable)
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.save_note)
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.look_day)
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.wait_choose)
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.save_time)
 async def reset_state(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''Сбрасывает состояния к никакому, открывает доступ к любой команде'''
     await message.answer('Вы вышли из режима создания.')
     await state.finish()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Выход из состояний
-@dp.message_handler(lambda c: functions.check_state(CreateTimetable.wait_choose, CreateTimetable.states), commands=['reset'])
-async def reset_state(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
-    await state.finish()
-    await message.answer('Вы вышли из текущего режима.')

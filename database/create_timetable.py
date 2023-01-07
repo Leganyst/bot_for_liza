@@ -20,7 +20,7 @@ days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sun
 def create_function():
 
     cur.execute('''CREATE TABLE users(
-        user_id integer NOT NULL PRIMARY KEY,
+        user_id bigint NOT NULL PRIMARY KEY,
         username text,
         status boolean);''')
 
@@ -34,7 +34,8 @@ def create_timetable(day=None) -> None:
     '''
 
     cur.execute(f'''CREATE TABLE {day}(
-        user_id integer,
+        id bigserial PRIMARY KEY,
+        user_id bigint,
         the_note text,
         event_time time,
         status boolean,

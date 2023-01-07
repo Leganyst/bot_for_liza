@@ -22,7 +22,7 @@ class EditStates(StatesGroup):
 # Данный хэндлер запускает цепочку действий по просмотру и редактирования расписания
 # Реагирует на команду /edit.
 # Отправляет сообщение, прикрепляет к нему кнопки с названием дней
-@dp.message_handler(commands=['edit'])
+@dp.message_handler(lambda message: check_user_filter(message), commands=['edit'])
 async def edit_timetable(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''Выбираем день для редактирования
     Выводятся в виде кнопок. При нажатии на любой день переходим к выбору времени события'''
@@ -58,6 +58,7 @@ async def edit_timetable_back(callback_query: aiogram.types.CallbackQuery, state
     await bot.answer_callback_query(callback_query.id)
     await EditStates.choose_day.set()
 
+# Данный хэндлер реагирует на нажатие кнопки "Удалить неделю". Очищает расписание всей недели.
 @dp.callback_query_handler(lambda c: c.data == 'delete_week', state=EditStates.choose_day)
 async def delete_week_notes(callback_query: aiogram.types.CallbackQuery, state: aiogram.dispatcher.FSMContext):
     '''Удаляем все расписание в неделю'''
@@ -83,7 +84,7 @@ async def check_day(callback_query: aiogram.types.CallbackQuery, state: aiogram.
     Выводим все записи по данному дню
     Выводятся в виде кнопок. При нажатии на выделенное время идёт переход в настройки заметки.
     '''
-
+    await state.update_data(user_id=callback_query.from_user.id)
     # Проверяем, нажатие ли кнопки было, или нет через callback data
     # Если не через кнопку, то мы передаём callback data в которой у нас названия дней 
     if callback_query.data != 'back_note':
@@ -117,6 +118,9 @@ async def delete_notes_from_day(callback_query: aiogram.types.CallbackQuery, sta
     # Получаем словарь с day и user_if
     state_data = await state.get_data()
     # Вызываем метод для удаления всех заметок дня для конкретного юзера
+
+    '''Ошибка. KeyError по user_id. нужно будет исправить'''
+
     DatabaseOperations(message=callback_query.message).delete_notes_from_day(day=state_data['day'], user_id=state_data['user_id'])
     # Уведомление юзеру, ответ телеграму, добавление кнопки назад и изменение клавиатуры
     await callback_query.answer('День очищен.')
@@ -143,7 +147,7 @@ async def get_note(callback_query: aiogram.types.CallbackQuery, state: aiogram.d
         delete_button = InlineKeyboardButton('Удалить', callback_data=f'delete_{note[0]}')
         # Перебирая список каждый раз отправляем человеку сообщение с текстом заметки
         kb = InlineKeyboardMarkup().add(delete_button)
-        await bot.send_message(state_data['user_id'], note[0], reply_markup=kb)
+        await bot.send_message(state_data['user_id'], note[1], reply_markup=kb)
     # Кнопка "Назад"
     button = InlineKeyboardButton('Назад', callback_data='back_note')
     keyboard = InlineKeyboardMarkup().add(button)
@@ -157,7 +161,7 @@ async def get_note(callback_query: aiogram.types.CallbackQuery, state: aiogram.d
 async def delete_note_event(callback_query: aiogram.types.CallbackQuery, state=aiogram.dispatcher.FSMContext):
     '''Удаляет заметку ко времени из базы данных'''
     state_data = await state.get_data()
-    DatabaseOperations(message=None).delete_note(text=callback_query.data, day=state_data['day'], user_id=state_data['user_id'])
+    DatabaseOperations(message=None).delete_note(id_note=callback_query.data, day=state_data['day'], user_id=state_data['user_id'])
     await callback_query.message.edit_text('Удалено.')
     await bot.answer_callback_query(callback_query.id)
 
@@ -167,9 +171,9 @@ async def delete_note_event(callback_query: aiogram.types.CallbackQuery, state=a
 
 
 # Выходим из всех состояний которые нам доступны во время редактирования через /quit
-@dp.message_handler(commands=['quit'], state=EditStates.choose_day)
-@dp.message_handler(commands=['quit'], state=EditStates.back_state)
-@dp.message_handler(commands=['quit'], state=EditStates.choose_time)
+@dp.message_handler(lambda message: check_user_filter(message), commands=['quit'], state=EditStates.choose_day)
+@dp.message_handler(lambda message: check_user_filter(message), commands=['quit'], state=EditStates.back_state)
+@dp.message_handler(lambda message: check_user_filter(message), commands=['quit'], state=EditStates.choose_time)
 async def leave_state(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''Выходит из всех трёх состояний, сбрасывая его ни к какому состоянию'''
     # Cброс состояний

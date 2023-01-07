@@ -25,16 +25,20 @@ def create_bottoms_for_choose_day(days: list, days_dictionary: dict):
 def create_time_object(text_time):
     '''Преобразует текст в объект времени.'''
 
-    text_time = text_time.split(':', 1)
-    hour = int(text_time[0])
-    minute = int(text_time[1])
-    if hour <= 23 and minute <= 59:
-        time = datetime.time(hour, minute)
-    else:
+    try:
+        text_time = text_time.split(':', 1)
+        hour = int(text_time[0])
+        minute = int(text_time[1])
+        if 0 <= hour <= 23 and 0 <= minute <= 59:
+            time = datetime.time(hour, minute)
+        else:
+            return False
+
+        return time
+    except IndexError:
         return False
-
-    return time
-
+    except ValueError:
+        return False
 
 def create_time_botton(user_id, day):
     '''
@@ -70,4 +74,11 @@ def search_note_event(data: str):
     data = data.split('_', 1)
     if data[0] == 'delete':
         return True
+
+def check_user_filter(message):
+    result = DatabaseOperations(message).check_user()
+    if result:
+        return True
+    else:
+        False
     

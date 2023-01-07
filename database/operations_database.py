@@ -27,12 +27,12 @@ class DatabaseOperations():
         Если что-то было найдено, возвращает True
         '''
         for day in days:
-            self.cur.execute(f'''SELECT * FROM {day};''')
+            self.cur.execute(f'''SELECT * FROM {day} WHERE user_id = %s;''', (self.message.from_user.id,))
             result = self.cur.fetchall()
             
             if result:
                 return True
-            return False
+        return False
     
     def save_info_user(self):
         '''
@@ -56,7 +56,7 @@ class DatabaseOperations():
     def save_event(self, day, text, time):
         '''Сохраняем событие'''
 
-        self.cur.execute(f'''INSERT INTO {day}
+        self.cur.execute(f'''INSERT INTO {day}(user_id, the_note, event_time, status)
         VALUES(%s, %s, %s, %s);''', (self.message.from_user.id, text, time, False))
 
         self.conn.commit() 
@@ -83,23 +83,23 @@ class DatabaseOperations():
         time = datetime.time(int(time[0]), int(time[1]), 0)
 
         self.cur.execute(f'''
-        SELECT the_note FROM {day}
+        SELECT id, the_note FROM {day}
         WHERE user_id = %s AND event_time = %s;''', (user_id, time))
 
         result = self.cur.fetchall()
         return result
-    
+    id
 
 
     # ===================================
     # Методы для удаления заметок из базы данных
     # ===================================
-    def delete_note(self, text, day, user_id):
+    def delete_note(self, id_note, day, user_id):
         '''Удаляем заметку о событии из базы данных'''
-        text = text.split('_', 1)
-        text = text[1]
+        id_note = id_note.split('_', 1)
+        id_note = id_note[1]
         self.cur.execute(f'''DELETE FROM {day}
-        WHERE the_note = %s and user_id = %s''', (text, user_id))
+        WHERE id = %s and user_id = %s''', (id_note, user_id))
 
         self.conn.commit()
     
@@ -159,14 +159,21 @@ class DatabaseOperations():
         
         self.conn.commit()
     
-    def update_status_event_to_false(self, event_time, day, user_id):
+    def update_status_event_to_false(self, user_id):
         '''
         Меняет ивенту статус на False
         False - сообщение не было отправлено
+        
+        Обновляет всем событиям статус с True на False, чтобы заново на них среагировать
         '''
-        self.cur.execute(f'''UPDATE {day}
-        SET status = %s
-        WHERE user_id = %s and event_time = %s;''', (False, user_id, event_time))
+        
+        for day in days:
+            self.cur.execute(f'''UPDATE {day}
+            SET STATUS = %s WHERE user_id = %s;''', (False, user_id))
+        
+        # self.cur.execute(f'''UPDATE {day}
+        # SET status = %s
+        # WHERE user_id = %s and event_time = %s;''', (False, user_id, event_time))
 
         self.conn.commit()
 

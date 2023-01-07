@@ -76,7 +76,7 @@ async def print_help(message: aiogram.types.Message):
     await message.answer(help_text)
 
 
-@dp.message_handler(commands=['true'])
+@dp.message_handler(lambda message: functions.check_user_filter(message) , commands=['true'])
 async def true_reminder(message: aiogram.types.Message):
     '''Сохраняет статус активного напоминания'''
     DatabaseOperations(message).save_true()
@@ -85,7 +85,7 @@ async def true_reminder(message: aiogram.types.Message):
     await check_time(user_id=message.from_user.id, message=message)
     print('end')
 
-@dp.message_handler(commands=['false'])
+@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['false'])
 async def false_reminder(message: aiogram.types.Message):
     '''Сохраняет статус неактивной напоминалки'''
     DatabaseOperations(message).save_false()

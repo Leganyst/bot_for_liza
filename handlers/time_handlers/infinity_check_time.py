@@ -32,12 +32,8 @@ async def check_time(user_id, message, flag=True):
     Затем через timedelta от событий отнимает время
     Если осталось меньше или равно 5 минут, присылается уведомление юзеру
     '''    
-    count = 0
     while flag:
         await asyncio.sleep(60)
-
-        count += 1
-        print(count)
 
         now_data = datetime.datetime.now()
         now_data = now_data.strftime('%A')
@@ -65,7 +61,7 @@ async def check_time(user_id, message, flag=True):
                     hour = int(now_time[0])
                     minute = int(now_time[1])
 
-                    if hour * 60 + minute >= 1438:
-                        DatabaseOperations(message=None).update_status_event_to_false(event, now_data.lower(), user_id)     
+                    if hour * 3600 + minute * 60 >= 89_995:
+                        DatabaseOperations(message=None).update_status_event_to_false(user_id=user_id)     
 
                     
