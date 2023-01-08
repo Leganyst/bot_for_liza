@@ -10,7 +10,7 @@ import psycopg2
 но необходимо точное время для расчёта оставшегося времени до урока, чтобы бот после мог напомнить пользователю об этом
 
 '''
-conn = psycopg2.connect('dbname=timetable user=root')
+conn = psycopg2.connect('dbname=timetable user=postgres')
 cur = conn.cursor()
 days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
