@@ -19,42 +19,55 @@ async def save_time(message: aiogram.types.Message):
     '''
     Предлагаем выбрать день для создания заметки.
     '''
-    # await message.answer(text=None, reply_markup=ReplyKeyboardRemove())
-
+    if message.text == "Давай!":
+        await message.answer("Ну что же...", reply_markup=ReplyKeyboardRemove())
+    
     inline_keyboard = functions.create_bottoms_for_choose_day(days, days_dictionary)
     await message.answer('Выбери день недели для создания заметки:', reply_markup=inline_keyboard)
     await CreateTimetable.choose_day.set()
 
-
+# Реагирует на нажатие кнопки при выборе дня
 @dp.callback_query_handler(state=CreateTimetable.choose_day)
 async def choose_day(callback_query: aiogram.types.CallbackQuery,
     state: aiogram.dispatcher.FSMContext):
     '''
     После нажатия кнопки сохраняем в state_data день для записи и просим вводить заметку
     '''
-
+    
+    text = ('Введи заметку, в которой опишешь что и где будет в назначенное время (само время писать не стоит).')
     await state.update_data(day=callback_query.data)
-    await callback_query.message.answer(text="Введи заметку, в которой опишешь что и где будет в назначенное время (само время писать не стоит).")
+    await callback_query.message.answer(text=text)
     await CreateTimetable.save_note.set()
     await bot.answer_callback_query(callback_query.id)
 
-
+# Реагирует на сообщение. В сообщении должна содержаться заметка. Суть напоминания
 @dp.message_handler(state=CreateTimetable.save_note)
 async def save_note(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''
     Этот хэндлер сохраняет заметку в соответствующее поле
     '''
+    if message.text == '/quit':
+        await state.finish()
+        await message.answer('Вы вышли из режима создания.')
+        return None
 
     await state.update_data(text=message.text)
-    await message.answer('Отлично. Теперь введи время твоего события в формате чч:мм')
+    await message.answer('Отлично. Теперь введи время твоего события в формате чч:мм*'
+        '\n\n*3:5 - это 03:05')
     await CreateTimetable.save_time.set()
 
-
+# Реагирует на сообщение. В сообщении содержится время.
 @dp.message_handler(state=CreateTimetable.save_time)
 async def save_time(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''
     Этот хэндлер сохраняет отправленное боту время события 
     '''
+    
+    if message.text == '/quit':
+        await state.finish()
+        await message.answer('Вы вышли из режима создания.')
+        return None
+    
     state_information = await state.get_data()
     time = functions.create_time_object(message.text)
     if time == False:

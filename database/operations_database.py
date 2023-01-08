@@ -169,7 +169,7 @@ class DatabaseOperations():
         
         for day in days:
             self.cur.execute(f'''UPDATE {day}
-            SET STATUS = %s WHERE user_id = %s;''', (False, user_id))
+            SET STATUS = %s;''', (False))
         
         # self.cur.execute(f'''UPDATE {day}
         # SET status = %s

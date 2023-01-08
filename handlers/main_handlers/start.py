@@ -1,7 +1,7 @@
 import aiogram
 
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
 from handlers.functions import functions
 from database.operations_database import DatabaseOperations
@@ -73,7 +73,7 @@ async def print_help(message: aiogram.types.Message):
     /help - вывод этой справки
     ''') 
     
-    await message.answer(help_text)
+    await message.answer(help_text, reply_markup=ReplyKeyboardRemove())
 
 
 @dp.message_handler(lambda message: functions.check_user_filter(message) , commands=['true'])
@@ -81,6 +81,7 @@ async def true_reminder(message: aiogram.types.Message):
     '''Сохраняет статус активного напоминания'''
     DatabaseOperations(message).save_true()
     await message.answer("Напоминалка включена")
+    
     
     await check_time(user_id=message.from_user.id, message=message)
     print('end')
