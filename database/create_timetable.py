@@ -52,8 +52,8 @@ for day in days:
         create_timetable(day)
         print(f'Таблица {day} создана')
     except Exception as error:
-        print(f'Возникла проблема при создании таблицы {day} :(')
-        print('Ошибка следующая: ')
+        print(f'Возникла проблема при создании таблицы {day} :('.encode('utf8'))
+        print('Ошибка следующая: '.encode('utf8'))
         print(error)
 
 conn.commit()

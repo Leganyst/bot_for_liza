@@ -62,7 +62,7 @@ async def check_time(user_id, message, flag=True):
                     minute = int(now_time[1])
 
                     if hour * 3600 + minute * 60 >= 89_995:
-                        print('Все события обновились')
+                        print('Все события обновились'.encode('utf8'))
                         DatabaseOperations(message=None).update_status_event_to_false()     
 
                     
