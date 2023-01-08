@@ -5,7 +5,7 @@ import aiogram
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-with open('settings\settings.json') as f:
+with open(r'settings/settings.json') as f:
     file = json.load(f)
     bot = aiogram.Bot(token=file['TOKEN'])
 
