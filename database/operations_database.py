@@ -57,7 +57,7 @@ class DatabaseOperations():
         '''Сохраняем событие'''
 
         self.cur.execute(f'''INSERT INTO {day}(user_id, the_note, event_time, status)
-        VALUES(%s, %s, %s, %s);''', (self.message.from_user.id, text.encode('utf8'), time, False))
+        VALUES(%s, %s, %s, %s);''', (self.message.from_user.id, text, time, False))
 
         self.conn.commit() 
 

@@ -50,7 +50,7 @@ async def save_note(message: aiogram.types.Message, state: aiogram.dispatcher.FS
         await state.finish()
         await message.answer('Вы вышли из режима создания.')
         return None
-
+    # Пробуем кодировать в utf8 перед сохранением
     await state.update_data(text=message.text)
     await message.answer('Отлично. Теперь введи время твоего события в формате чч:мм*'
         '\n\n*3:5 - это 03:05')

@@ -50,10 +50,10 @@ create_function()
 for day in days:
     try:
         create_timetable(day)
-        print(f'Таблица {day} создана'.encode('utf8'))
+        print(f'Таблица {day} создана')
     except Exception as error:
-        print(f'Возникла проблема при создании таблицы {day} :('.encode('utf8'))
-        print('Ошибка следующая: '.encode('utf8'))
+        print(f'Возникла проблема при создании таблицы {day} :(')
+        print('Ошибка следующая: ')
         print(error)
 
 conn.commit()
