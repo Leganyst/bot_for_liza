@@ -159,7 +159,7 @@ class DatabaseOperations():
         
         self.conn.commit()
     
-    def update_status_event_to_false(self, user_id):
+    def update_status_event_to_false(self):
         '''
         Меняет ивенту статус на False
         False - сообщение не было отправлено
@@ -169,7 +169,7 @@ class DatabaseOperations():
         
         for day in days:
             self.cur.execute(f'''UPDATE {day}
-            SET STATUS = %s;''', (False))
+            SET STATUS = %s;''', (False,))
         
         # self.cur.execute(f'''UPDATE {day}
         # SET status = %s

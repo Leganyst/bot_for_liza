@@ -39,6 +39,16 @@ async def check_time(user_id, message, flag=True):
         now_data = now_data.strftime('%A')
         events = DatabaseOperations(message=None).get_events(day=now_data.lower(), user_id=user_id)
         
+        now_time = datetime.datetime.now()
+        now_time = now_time.strftime('%H:%M')
+        now_time = now_time.split(':')
+        hour = int(now_time[0])
+        minute = int(now_time[1])
+
+        if hour * 60 + minute >= 1438:
+            print('Все события обновились')
+            DatabaseOperations(message=None).update_status_event_to_false()    
+
         flag = DatabaseOperations(message=None).get_status(user_id=user_id)
         flag = flag[0][0]
         for events_list in events:
@@ -55,14 +65,6 @@ async def check_time(user_id, message, flag=True):
                         await bot.send_message(user_id, text)
                     DatabaseOperations(message=None).update_status_event_to_true(event_time=event, day=now_data.lower(), user_id=user_id)
 
-                    now_time = datetime.datetime.now()
-                    now_time = now_time.strftime('%H:%M')
-                    now_time = now_time.split(':')
-                    hour = int(now_time[0])
-                    minute = int(now_time[1])
-
-                    if hour * 3600 + minute * 60 >= 89_995:
-                        print('Все события обновились'.encode('utf8'))
-                        DatabaseOperations(message=None).update_status_event_to_false()     
+ 
 
                     
