@@ -22,6 +22,9 @@ async def save_time(message: aiogram.types.Message):
     if message.text == "Давай!":
         await message.answer("Ну что же...", reply_markup=ReplyKeyboardRemove())
     
+    # if await functions.check_commands(message):
+    #     return
+    
     inline_keyboard = functions.create_bottoms_for_choose_day(days, days_dictionary)
     await message.answer('Выбери день недели для создания заметки:', reply_markup=inline_keyboard)
     await CreateTimetable.choose_day.set()
@@ -34,7 +37,8 @@ async def choose_day(callback_query: aiogram.types.CallbackQuery,
     После нажатия кнопки сохраняем в state_data день для записи и просим вводить заметку
     '''
     
-    text = ('Введи заметку, в которой опишешь что и где будет в назначенное время (само время писать не стоит).')
+    text = ('Введи заметку, в которой опишешь что и где будет в назначенное время (само время писать не стоит).'
+    ' Не забывай, прежде чем перейти в другой режим - выйди из нынешнего (/quit)')
     await state.update_data(day=callback_query.data)
     await callback_query.message.answer(text=text)
     await CreateTimetable.save_note.set()
@@ -50,6 +54,8 @@ async def save_note(message: aiogram.types.Message, state: aiogram.dispatcher.FS
         await state.finish()
         await message.answer('Вы вышли из режима создания.')
         return None
+    # if await functions.check_commands(message):
+    #     return
     # Пробуем кодировать в utf8 перед сохранением
     await state.update_data(text=message.text)
     await message.answer('Отлично. Теперь введи время твоего события в формате чч:мм*'
@@ -67,11 +73,13 @@ async def save_time(message: aiogram.types.Message, state: aiogram.dispatcher.FS
         await state.finish()
         await message.answer('Вы вышли из режима создания.')
         return None
+    # if await functions.check_commands(message):
+    #     return
     
     state_information = await state.get_data()
     time = functions.create_time_object(message.text)
     if time == False:
-        await message.answer('Введи время в правильном формате')
+        await message.answer('Введи время в правильном формате. Если хочешь выйти из режима - /quit')
         return
 
     DatabaseOperations(message).save_event(day=state_information['day'], text=state_information['text'], time=time)
@@ -83,13 +91,18 @@ async def save_time(message: aiogram.types.Message, state: aiogram.dispatcher.FS
 # =============== выход из режима ========================
 # ========================================================
 
-@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.choose_day)
-@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.create_timetable)
-@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.save_note)
-@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.look_day)
-@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.wait_choose)
-@dp.message_handler(lambda message: functions.check_user_filter(message), commands=['quit'], state=CreateTimetable.save_time)
+@dp.message_handler(lambda message: functions.check_user_filter(message), state=CreateTimetable.choose_day)
+@dp.message_handler(lambda message: functions.check_user_filter(message), state=CreateTimetable.create_timetable)
+@dp.message_handler(lambda message: functions.check_user_filter(message), state=CreateTimetable.save_note)
+@dp.message_handler(lambda message: functions.check_user_filter(message), state=CreateTimetable.look_day)
+@dp.message_handler(lambda message: functions.check_user_filter(message), state=CreateTimetable.wait_choose)
+@dp.message_handler(lambda message: functions.check_user_filter(message), state=CreateTimetable.save_time)
 async def reset_state(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''Сбрасывает состояния к никакому, открывает доступ к любой команде'''
-    await message.answer('Вы вышли из режима создания.')
-    await state.finish()
+    if message.text == '/quit':
+        await message.answer('Вы вышли из режима создания.')
+        await state.finish()
+    else:
+        if await functions.check_commands(message):
+            return
+        

@@ -13,7 +13,7 @@ class DatabaseOperations():
         message: объект типа Message библиотеки aiogram. Содержит много полезной информации.
         '''
         self.message = message
-        self.conn = psycopg2.connect('dbname=timetable user=root')
+        self.conn = psycopg2.connect('dbname=timetable user=postgres')
         self.cur = self.conn.cursor()
 
 

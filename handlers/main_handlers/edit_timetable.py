@@ -26,6 +26,11 @@ class EditStates(StatesGroup):
 async def edit_timetable(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''Выбираем день для редактирования
     Выводятся в виде кнопок. При нажатии на любой день переходим к выбору времени события'''
+    if message.text == '/quit':
+        await state.finish()
+        return
+    # if await check_commands(message):
+    #     return
 
     # Функция генерирует кнопки с названием дней
     inline_keyboard = create_bottoms_for_choose_day(days, days_dictionary)
@@ -171,12 +176,16 @@ async def delete_note_event(callback_query: aiogram.types.CallbackQuery, state=a
 
 
 # Выходим из всех состояний которые нам доступны во время редактирования через /quit
-@dp.message_handler(lambda message: check_user_filter(message), commands=['quit'], state=EditStates.choose_day)
-@dp.message_handler(lambda message: check_user_filter(message), commands=['quit'], state=EditStates.back_state)
-@dp.message_handler(lambda message: check_user_filter(message), commands=['quit'], state=EditStates.choose_time)
+@dp.message_handler(lambda message: check_user_filter(message), state=EditStates.choose_day)
+@dp.message_handler(lambda message: check_user_filter(message), state=EditStates.back_state)
+@dp.message_handler(lambda message: check_user_filter(message), state=EditStates.choose_time)
 async def leave_state(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
     '''Выходит из всех трёх состояний, сбрасывая его ни к какому состоянию'''
     # Cброс состояний
-    await state.finish()
-    # Уведомление пользователю что мы вышли
-    await message.answer('Вы вышли из режима редактирования.')
+    if message.text == '/quit':
+        await state.finish()
+        # Уведомление пользователю что мы вышли
+        await message.answer('Вы вышли из режима редактирования.')
+    else:
+        if await check_commands(message):
+            return

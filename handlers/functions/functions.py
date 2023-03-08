@@ -82,3 +82,17 @@ def check_user_filter(message):
     else:
         False
     
+
+async def check_commands(message):
+    '''
+    Проверяет введённую команду чтобы подсказать пользователю что ему нужно выйти
+    
+    True - если использовалась какая-то команда. Рекомендуем пользователю выйти из текущего режима
+    False - если не использовалась какая-то команда. Тогда всё ок
+
+    '''
+    commands = ('/start', '/create', '/edit', '/true', '/false', '/help')
+    if message.text in commands:
+        await message.answer('Сначала выйди из текущего режима - /quit (нажми на команду)')
+        return True
+    return False
